@@ -1,0 +1,183 @@
+---
+title: "Lab 2- Build a map"
+author: "Tristan Swartout"
+date: "2024-01-17"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+For this assignment I will be making a study area map of the Auburn Captive Deer Facility (ACF) in relation to where it is located to the county and state level of Alabama. Within ACF I will also provide a raster of the 2019 NLCD land cover type. I chose ACF as the study area map because this is the location where I conduct my own research for my graduate program.The shapefile of ACF was one I created while the state and county shapefiles were provided through functions in r. 
+
+To begin I will download some of the required packages
+
+```{r}
+require(tidyverse)
+require(sf)
+require(tigris)
+require(geodata)
+require(terra)
+require(colorspace)
+require(tidyterra)
+require(ggnewscale)
+require(cowplot)
+require(FedData)
+require(ggspatial)
+```
+
+Now lets download the ACF shapefile, making sure the link has the word raw in it. This shapefile was created previosuly in Arc GIS Pro. 
+
+```{r}
+ACF=st_read("/vsicurl/https://github.com/tristanswartout/Spatial-Ecology/raw/main/Lab%202/Boundary.shp")
+```
+
+Now lets plot ACF
+
+```{r}
+plot(st_geometry(ACF))
+```
+
+Let's see what the projection is for this shapefile.
+
+```{r}
+st_crs(ACF)$proj4string
+```
+
+Now lets add a shapefile of the state of Alabama and look at what coordinate system it is under.
+
+```{r}
+Alabama = states() %>% 
+  filter(NAME=='Alabama')
+
+plot(st_geometry(Alabama))
+
+st_crs(Alabama)$proj4string
+```
+
+Now to add a shapefile of the Alabama county Tallapoosa, this is where ACF is located. We will also look at its coordinate system.
+
+```{r}
+Tallapoosa = counties() %>% 
+  filter(NAME=='Tallapoosa')
+
+plot(st_geometry(Tallapoosa))
+
+st_crs(Tallapoosa)$proj4string
+```
+
+Next, lets add the 2019 NLCD file which looks at land cover types in the US; specifically the area of Tallapoosa county
+
+```{r}
+lct= get_nlcd(template =  Tallapoosa,label = "TalNLCD",year = 2019)
+plot(lct)
+st_crs(lct)$proj4string
+```
+
+However, all files downloaded so far are under different coordinates systems. 
+
+```{r}
+st_crs(Tallapoosa)$proj4string
+st_crs(lct)$proj4string
+st_crs(ACF)$proj4string
+st_crs(Alabama)$proj4string
+```
+
+Proof right there some form of projection needs to occur, lets transform Tallapoosa to the raster coordinates.
+
+```{r}
+TallNLCD = st_transform(Tallapoosa, st_crs(lct))
+ACF2 = st_transform(ACF, st_crs(lct))
+Alabama2 = st_transform(Alabama, st_crs(lct))
+st_crs(TallNLCD)$proj4string
+st_crs(lct)$proj4string
+st_crs(ACF2)$proj4string
+st_crs(Alabama2)$proj4string
+```
+
+Let's see real quick how Tallapoosa county looks in the Alabama shapefile.
+
+```{r}
+plot(st_geometry(Alabama2))
+plot(st_geometry(TallNLCD),fill=NA,color='red',add=TRUE)
+```
+
+Now the same way let's see what ACF looks like in the county border.
+
+```{r}
+plot(st_geometry(TallNLCD))
+plot(ACF2,fill=NA,color='black',add=TRUE)
+```
+
+Now let's do the two maps as a ggplot.
+
+```{r}
+zoomedOutAl = ggplot()+
+  geom_sf(data = Alabama2)+
+  geom_sf(data = TallNLCD, fill=NA, color='red')
+zoomedOutAl
+zoomedOutAl2=zoomedOutAl+theme_bw()+theme(panel.grid=element_blank(),axis.text=element_blank(),axis.ticks=element_blank(),panel.border=element_blank())+ggspatial::annotation_scale(location = "tl",bar_cols = c("grey60", "white"),pad_x = unit(0.35, "in"), pad_y = unit(1.4, "in"))
+zoomedOutAl2
+```
+
+```{r}
+zoomedOut = ggplot()+
+  geom_sf(data = TallNLCD)+
+  geom_sf(data = ACF2, fill=NA, color='red')
+zoomedOut
+zoomedOut2=zoomedOut+theme_bw()+theme(panel.grid=element_blank(),axis.text=element_blank(),axis.ticks=element_blank(),panel.border=element_blank())+ggspatial::annotation_north_arrow(
+    location = "tl", which_north = "true",
+    pad_x = unit(0, "in"), pad_y = unit(1.5, "in"),
+    style = ggspatial::north_arrow_nautical(
+      fill = c("grey40", "white"),
+      line_col = "grey20"),text_size=10)
+zoomedOut2
+```
+
+Note the compass may appear wrongly placed in this map but will be placed correctly in final product. Now they are have the same coordinates system so lets crop the land cover file into Tallapoosa.
+
+```{r}
+TallNLCDCrop=crop(lct,TallNLCD)
+```
+
+```{r}
+plot(TallNLCDCrop)
+plot(st_geometry(TallNLCD),add=TRUE)
+plot(st_geometry(ACF2,add=TRUE))
+```
+
+Now we have the land cover type of Tallapoosa county on the same projection scale
+Lets now remove the land cover type raster that is outside the county borders.
+
+```{r}
+TallNLCDCrop = mask(TallNLCDCrop, TallNLCD)
+plot(ACF2)
+plot(TallNLCDCrop)
+```
+
+Now the land cover type is cropped just to within the county borders, so now let's crop NLCD into ACF using crop and mask functions.
+
+```{r}
+ACFNLCDCrop=crop(lct,ACF2)
+ACFNLCDCrop2 = mask(ACFNLCDCrop, ACF2)
+plot(ACFNLCDCrop2)
+```
+
+Let's recheck coordinates for both final product.
+
+```{r}
+st_crs(ACFNLCDCrop2)$proj4string
+st_crs(TallNLCD)$proj4string
+```
+
+Looks good, now lets do ggplot for ACF landcover type.
+
+```{r}
+ACFlct=ggplot()+geom_spatraster(data=ACFNLCDCrop2)+labs(fill='Land cover type')+theme(panel.grid=element_blank(),axis.text.x=element_text(angle=90, vjust=0.5, size=6))
+ACFlct
+```
+
+And finally let's utilize cowplot and put all the final products together.
+
+```{r}
+plot_grid(ACFlct,zoomedOut2,zoomedOutAl2,ncol =3,rel_widths = c(2.5,0.85,0.6))
+```
