@@ -12,6 +12,18 @@ For this assignment I will be making a study area map of the Auburn Captive Deer
 To begin I will download some of the required packages
 
 ```{r}
+install.packages("tidyverse")
+install.packages("sf")
+install.packages("tigris")
+install.packages("geodata")
+install.packages("terra")
+install.packages("colorspace")
+install.packages("tidyterra")
+install.packages("ggnewscale")
+install.packages("cowplot")
+install.packages("FedData")
+install.packages("ggspatial")
+
 require(tidyverse)
 require(sf)
 require(tigris)
