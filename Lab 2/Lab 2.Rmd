@@ -193,3 +193,7 @@ And finally let's utilize cowplot and put all the final products together.
 ```{r}
 plot_grid(ACFlct,zoomedOut2,zoomedOutAl2,ncol =3,rel_widths = c(2.5,0.85,0.6))
 ```
+
+# Grade
+
+$\color{red}{\text{Great work, Tristan.}}$
