@@ -32,7 +32,7 @@ set.seed(23)
 simpRast[] = rpois(ncell(simpRast), lambda=3)
 
 plot(simpRast)
-text(simpRast, digits=2)
+# text(simpRast, digits=2)
 ```
 Here is the raw raster
 Now lets increase grain by a factor of 2 and have cells fuse by the mean.
@@ -41,14 +41,14 @@ Now lets increase grain by a factor of 2 and have cells fuse by the mean.
 simpRast2<- aggregate(simpRast, fact=2, fun='mean')
 
 plot(simpRast2)
-text(simpRast2, digits=2)
+# text(simpRast2, digits=2)
 ```
 Now increase by a factor of 5. 
 ```{r}
 simpRast5<- aggregate(simpRast, fact=5, fun='mean')
 
 plot(simpRast5)
-text(simpRast5, digits=2)
+# text(simpRast5, digits=2)
 ```
 
 Now increase by a factor of 10. 
@@ -56,7 +56,7 @@ Now increase by a factor of 10.
 simpRast10<- aggregate(simpRast, fact=10, fun='mean')
 
 plot(simpRast10)
-text(simpRast10, digits=2)
+# text(simpRast10, digits=2)
 
 ```
 Now let's see the variance and mean of all these rasters.
@@ -99,6 +99,8 @@ plot(Grainvariance~Grainvalues)
 
 Answer 1:
 What you will first notice is the mean does not change even with the grain scaling up for each raster while the variance decreases with an increase in grain. The trend observed for the mean does not change because yes while the number of raster grain values change they are merged together and form a new value which is the mean of all the former values fused together; resulting in no change in overall mean. Regarding the decreasing trend in variance; this is occurring because the variability between mean values is decreasing. As there are fewer values to calculate the mean it should hypothetically approach closer to the actual mean of the raster which in this case is 3.0078. 
+
+$\color{red}{\text{Nice work. +4}}$
 
 ## Challenge 2 (4 points)
 
@@ -184,12 +186,16 @@ plot(Grainvariance2~Grainvalues2)
 Answer 2:
 Other than mean a common summary output is mode and this could be useful in situations such as land cover type where you are trying to determine the most common cover type for an area based off raster cell frequency. There are some differences between the findings of challenge 1 and 2. A similarity between Challenge 1 and 2 is that in both cases the variance decreases with an increase in grain size with each raster. Just like the first challenge this is occurring because there is less variability as the the grain size increases. A key difference between challenge 1 and 2 is that the mean increases in challenge 2 while it remains constant in challenge 1. This is likely because with modal function you are not calculating a new mean from 4 cells but the most common integer which will result in a different mean with changing grain size. 
 
+$\color{red}{\text{Nice. +4}$
+
 ## Challenge 3 (2 points)
 
 **Recall that before we calculated forest cover, we cropped our NLCD raster to minimize its size and the computing effort necessary from our poor little computers. How might that affect our ability to evaluate the scale at which five-lined skinks respond to forest cover? Why?**
 
 Answer 3:
 By cropping the area we are scaling the data and assuming we picked the correct scale. As documented in Thursday's discussion course, determining the right scale is a difficult task. In the large raster file we took our study area and created an extent of it with 10 km on each side, then we did 5 km and 10 km buffers around each point. While these may be the correct choices they could also be incorrect and either having far to large of scales or possibly to small of scales causing issues with doing analysis interpretation.
+
+$\color{red}{\text{Mostly right. What I was looking for is that we simply can't accurately explore scales greater than 10 km when we crop at 10 km because our buffers around our points will start creeping into areas for which we don't have data. +1.5}}$
 
 ## Challenge 4 (4 points)
 
@@ -334,6 +340,8 @@ Answer 4:
 
 Based off the correlation chart you may notice pretty strong positive correlation between these variables. For example, when radius variables are close in distance (e.g., 4 km and 5 km) they are extremely correlated up to a correlation value of 0.98. While in the opposite case when the radius variables are far in distance such a 100 m and 5km there is very little correlation; a value of 0.10 although this value is also non-significant. This is not true in all cases, for example, 2 km and 5 km may be fairly different in scale but still highly correlated. To summarize, if two variables are close in scale they will generally have high correlation (0.75 or higher) while variables far in scale from each other will generally have little to no correlation. 
 
+$\color{red}{\text{Yes! +4}}$
+
 ## Challenge 5 (4 points)
 
 **Fit 8 logistic regression models (a null model and one for each of the 7 forest scales). Compare these models using AICc. Which scale do you think represents the critical or characteristic scale at which forest cover affects skink presence? Is this scale clearly better than the others, or is there some ambiguity? What are some mechanisms by which forest cover could affect skink presence at this scale? What is your overall conclusion regarding how forest cover affects skink presence (i.e., take a look at the betas)?**
@@ -375,7 +383,9 @@ exp(10.149)
 
 Answer 5:
 
-Based off the AIC table, the 2-km model is the most supported based off the lowest delta AIC score and AIC weight. However, there are clearly competing models, both 4, 3, and 5 km models are within 2 delta AIC scores which would indicate these models may be just as likely as being the appropriate model regarding what scale to use. Finally, it is important to notice the top model only has a cumulative weight of 0.36 which is fairly low this indicates a better model may include more variables or other metrics not accounted for. Interesting to note, these scale are all fairly large for such a small species; 5-km is quite a buffer of forests for a tiny species but 2-km may also be a top competitor that's a fairly large difference in distance. When looking at the betas first you will notice as scale increase the beta value also increases for the most part. You will also notice that after exponentiating the beta there is a large difference in odds ratio. For example, the beta for 2-km is 36026 odds ratio (times as likely) while the odds ratio for 4-km is a odds ratio of 45071 (times as likely) these are huge differences and must be considered when what model may be best for management decisions. Regardless forest cover provides benefit to skink presence; if there is forest then skinks are more likely to be present. 
+Based off the AIC table, the 2-km model is the most supported based off the lowest delta AIC score and AIC weight. However, there are clearly competing models, both 4, 3, and 5 km models are within 2 delta AIC scores which would indicate these models may be just as likely as being the appropriate model regarding what scale to use. Finally, it is important to notice the top model only has a cumulative weight of 0.36 which is fairly low this indicates a better model may include more variables or other metrics not accounted for. Interesting to note, these scale are all fairly large for such a small species; 5-km is quite a buffer of forests for a tiny species but 2-km may also be a top competitor that's a fairly large difference in distance. When looking at the betas first you will notice as scale increase the beta value also increases for the most part. You will also notice that after exponentiating the beta there is a large difference in odds ratio. For example, the beta for 2-km is 36026 odds ratio (times as likely) while the odds ratio for 4-km is a odds ratio of 45071 (times as likely) these are huge differences and must be considered when what model may be best for management decisions. Regardless forest cover provides benefit to skink presence; if there is forest then skinks are more likely to be present.
+
+$\color{red}{\text{Nice, but what about the mechanisms? +3}}$
 
 ## Challenge 6 (2 points)
 
@@ -384,3 +394,5 @@ Based off the AIC table, the 2-km model is the most supported based off the lowe
 Answer 6:
 
 As I mentioned at the end of the last challenge question, the top model has competitors and a low weight. A possible solution to improve fit is to have a multi-regression model where you include several scale variables together (i.e., 2, 4, and 3 km all in same model). Now in real life would this make sense to do in real life? If you are curious about an animals behavior at several scales; then yes it make make sense. I can definitely think of a scenario in the case of skinks where maybe you are looking at skink movement in their core area and also their max home range where you want to account for both regions of skink movement; so as a result, you would run a model where both variables are included especially if an AIC table indicates its a top model. 
+
+$\color{red}{\text{Except that the high correlation is going to cause multicolinearity problems in your model. You're thus going to have to either choose one, or aggregate them somehow (e.g., PCA). +2}}$
