@@ -1,0 +1,215 @@
+---
+title: "Tristan Swartout Lab 5 assignment - Point pattern analysis"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r, warning=F, error=F, message=F}
+rm(list=ls())
+
+require(spatstat)
+require(tidyverse)
+require(terra)
+
+```
+
+
+# Challenge 1 (3 points)
+
+Create a simulation window on a landscape stretching from 0 to 100 units in both the x and y directions. Now simulate the distribution of an organism on this landscape using a Poisson process with a lambda value of 0.01. Plot this organism's distribution. How many organisms are there on your landscape? What is the expected number of organisms that you should find on this landscape based on your simulation parameters? Why?
+
+First let's make an extent map
+
+
+```{r}
+set.seed(23)
+
+Simul = rpoispp(lambda = 0.01, nsim=1, win=owin(c(0,100),c(0,100)))
+plot(Simul)
+npoints(Simul)
+```
+
+Now lets remove setseed and run it again to see what the new value is 
+```{r}
+Simul1 = rpoispp(lambda = 0.01, nsim=1, win=owin(c(0,100),c(0,100)))
+plot(Simul1)
+npoints(Simul1)
+```
+
+Notice the value is different now
+
+
+Answer 1:
+
+After the first simulation we have 101 randomly placed individuals. Based off expectation of what lambda in a rpoispp is defined as (the number of points per unit area), we should expect 100 individuals because a 0.01 would indicate a 0.01 portion of the total area which in this case is 10,000 units squared which would give you a value of 100. Why there is 101 points and not exactly 100 is likely due to it being a random generator because notice during a second simulation the value is different if setseed is removed. 
+
+
+# Challenge 2 (3 points)
+
+Verify that there no linear or quadratic pattern in the distribution of your organisms using fitted Poisson process models. Show the outcome of this analysis and explain your conclusion.
+
+
+First lets check for CSR using chi squared
+```{r}
+q = quadratcount(Simul, nx=4, ny=4)
+plot(Simul)
+plot(q, add=T)
+
+quadrat.test(Simul, nx=4, ny=4, method='Chisq')
+```
+
+Indication it is random
+
+
+Now let's look at the Ripleys L test to see how it appears
+
+```{r}
+Lmodtrans = Lest(Simul, correction='translate')
+plot(Lmodtrans, .-r~r)
+```
+Now with CI's
+
+```{r}
+Lmod2 = envelope(Simul, Lest, nsim=99, rank=1, correction='translate', global=F)
+plot(Lmod2, .-r~r, shade=c('hi', 'lo'), legend=F)
+```
+Once again indication it is random
+
+Finally lets look for inhomogeneous point process by running models where we account for a homogeneous point process (i.e., the null), then a linear model, and finally a quadratic model.
+
+
+```{r}
+Null = ppm(Simul ~1)
+Mxy = ppm(Simul ~ x + y)
+Mxy2 = ppm(Simul ~polynom (x,y,2))
+```
+
+Then lets put out an AIC table
+
+
+```{r}
+data.frame(model = c('int', 'xy', 'xy2'),
+           AIC = c(AIC(Null), AIC(Mxy), AIC(Mxy2)))
+```
+
+
+Answer 2:
+
+Not surprising our random simulation model passed the tests of randomness for a chi-squared test and Ripleys L test indicating no spatial aggregation. However, when running linear and quadratic effect models we found that the AIC value for the linear model was very similar and competing to the null model (i.e., randomness). This indicates that the random point simulation may follow some coordinate linear pattern on the extent grid. 
+
+
+# Challenge 3 (14 points)
+
+I have simulated the distributions of 2 critters and provided their x-y coordinates. One of them is a non-territorial predator. The second is a critter that is preyed upon by the predator and exhibits a fear response to the predator's presence. Use the tools you learned in the lab to explore the distributions of these two critters. Identify which one is the predator and which is the prey, and provide code and a thorough justification supporting your conclusion.
+
+
+```{r}
+#Use this code chunk to get you started.
+
+predPreyWin = owin(xrange = c(0, 100), yrange = c(0, 100))
+
+critter1 = read.csv('https://raw.githubusercontent.com/ValenteJJ/SpatialEcology/main/Week5/species1.csv') %>% 
+  mutate(org = 'critter1')
+
+critter2 = read.csv('https://raw.githubusercontent.com/ValenteJJ/SpatialEcology/main/Week5/species2.csv') %>% 
+  mutate(org = 'critter2')
+```
+
+Lets plot critter 1
+
+```{r}
+pppcrit1=ppp(x=critter1$x, y=critter1$y, window = predPreyWin)
+plot(pppcrit1)
+```
+
+Let's examine if critter 1 is aggregated and not following CSR
+
+```{r}
+Crit1plot = envelope(pppcrit1, Lest, nsim=99, rank=1, correction='translate', global=F)
+plot(Crit1plot, .-r~r, shade=c('hi', 'lo'), legend=F)
+```
+
+
+Now lets plot critter 2
+
+```{r}
+pppcrit2=ppp(x=critter2$x, y=critter2$y, window = predPreyWin)
+plot(pppcrit2)
+```
+
+
+Now let's see if there is aggregation and not following CSR
+
+
+```{r}
+Crit2plot = envelope(pppcrit2, Lest, nsim=99, rank=1, correction='translate', global=F)
+plot(Crit2plot, .-r~r, shade=c('hi', 'lo'), legend=F)
+```
+
+Based off this both species appear to follow CSR and not clustering 
+
+
+Now lets overlay the points
+
+```{r}
+Comb = ppp(c(pppcrit1$x,pppcrit2$x),c(pppcrit1$y,pppcrit2$y),marks = factor(c(rep("A",pppcrit1$n),rep("B",pppcrit2$n))), window = predPreyWin)
+plot(Comb)
+```
+
+Lets first run a ripley L test without accounting for bivariate points; ignoring the distribution of critter b
+
+
+```{r}
+Model1 = envelope(Comb, Lest, nsim=99, rank=1, i='A', global=F)
+
+plot(Model1, .-r~r, legend=F)
+```
+
+
+And now let's run a multi model utilizing i to account for the distribution of both critters we will make i critter A and j critter B
+
+```{r}
+Model1iA = envelope(Comb, Lcross, nsim=99, rank=1, global=F, i='A', j='B', simulate = expression(rlabel(Comb)))
+plot(Model1iA, .-r~r, legend=F)
+
+```
+
+
+Now lets do the opposite of what we did before and make i critter B and j Critter A
+
+```{r}
+Model1iB = envelope(Comb, Lcross, nsim=99, rank=1, global=F, i='B',j='A', simulate = expression(rlabel(Comb)))
+plot(Model1iB, .-r~r, legend=F)
+
+```
+
+It looks like both graphs tell a similar story of distance apart between both critter types.
+
+Lets see if each species congregates or is close distance to each other (within species distance)
+
+
+Critter B
+
+
+```{r}
+Model1iBB = envelope(Comb, Lcross, nsim=99, rank=1, global=F, i='B',j='B', simulate = expression(rlabel(Comb)))
+plot(Model1iBB, .-r~r, legend=F)
+
+```
+
+Critter A
+
+```{r}
+Model1iAA = envelope(Comb, Lcross, nsim=99, rank=1, global=F, i='A',j='A', simulate = expression(rlabel(Comb)))
+plot(Model1iAA, .-r~r, legend=F)
+
+```
+
+
+Notice Critter B are random distances from each other while critter A is close to each other (positive y values in chart)
+
+
+Answer 3:
+
+To start off you notice the distance is not random between the two species indicating that one is avoiding the other. Based off the within species distance findings, Critter A (critter 1) is clustering and not following a random distribution likely due to critter B (critter 2); note Critter B is randomly distributed in relation to itself. This would indicate to me that critter B (critter 2) is the predator and critter A (critter 1) is clustering together to avoid predation events. I made this assumption based off the typical behavior of many species of prey that will cluster in numbers to avoid predation because more individuals together will result in a lower probability of any given individual being predated (safer in numbers). 
