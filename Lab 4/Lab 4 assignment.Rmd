@@ -209,6 +209,9 @@ Now lets do the chart correlation of my final dataframe
 
 Answer 1: From my first take I notice correlation is all over the place for this chart. Some correlation is extremely positive correlated such as area and core area which shows the redundancy of those metrics in some situations. There are also negative correlations between some variables such as contiguity (contig) and euclidean nearest neighbor (enn). Overall this chart shows a mix of information that some variables are extremely redundant of each other (high correlation) while others can both be used in analysis with little worry of redundancy. 
 
+$\color{red}{\text{Good summary. +4}}$
+
+
 
 ## Challenge 2 (4 points)
 
@@ -285,6 +288,9 @@ te4
 
 Answer 2:
 The first thing that stands out to me is mean patch size and its respective standard deviation decrease with the rook strategy as you would expect due to fewer cells being included. Next you will notice that euclidean neighbor distance decreases with the rook strategy. For number of patches you'll see that with the rook strategy the number of patches increase because less patches will connect resulting in more individual patches. Finally, to my surprise the total edge measurement remains the same with both strategies. For total edge metric it wouldn't matter which strategy you would use since they provide the same results. If you're looking at patches where slight gaps don't matter it would make more sense to use the queen strategy since it wont separate patches as much. But if you are trying to distinguish individual patches by gap seperation you would definitely want a rook strategy when calculating mean size, standard deviation and number of patches.
+
+$\color{red}{\text{Great! It all comes down to "what's your question?". +4}}$
+
 
 
 ## Challenge 3 (4 points)
@@ -467,6 +473,7 @@ sei2019
 Answer 3c:
 From 2011 to 2019 the shannon diversity index increased from 1.30 to 1.34; which means the diversity of cover types is increasing within this area. Similarly, the shannon eveness index increased from 0.72 to 0.74 in this time span; this is due to the richness and diversity of the landscape increasing resulting in an increase in evenness of landcover types.
 
+$\color{red}{\text{Excellent. +4}}$
 
 
 ## Challenge 4 (4 points)
@@ -695,6 +702,8 @@ plot(aspenennvec~metric)
 Answer 4b:
 
 To begin, I chose total area because I wanted to see the trend of class size as the proportion of area increased. As expected as the percent total area covered increases the amount of the aspen class increased. Next I wanted to look at the mean patch area for the aspen class. Also as expected, as total area of the aspen class increased the mean patch area also increased. Finally, I wanted to see euclidean distance to nearest patch of aspen. And also as expected, the distance to nearest aspen patch decreased as the total area covered by aspen increased.  
+
+$\color{red}{\text{Good. Notice the non-linearity in these latter metrics. This is not a spurious finding, but rather a pattern that is common to see. +4}}$
 
 
 
@@ -974,4 +983,7 @@ plot(aspenennveched~metric)
 Answer 5b:
 
 The first metric I chose was the landscape aggregation index because that fits well when comparing clustering of land mass. As we could expect at the clustering metric increases the aggregation index also increases. Next, I looked at the landscape mean of the core area because that will measure the core area as these clustered areas get larger. Once again as expected, as the clustering metric increases the mean of the core area also increases because as landmass increases so should the core area. Finally, I looked at edge density because as the area had increased clustering the edge should become more solidified. As expected, as the clustering metric increases there is less defined edge resulting in the observed negative trend. 
+
+
+$\color{red}{\text{Great work, Tristan! +4}}$
 
