@@ -1,0 +1,426 @@
+---
+title: "Lab 6 - Tristan Swartout"
+output: html_notebook
+---
+
+```{r}
+rm(list=ls())
+
+require(tidyverse)
+require(pgirmess)
+require(ncf)
+require(terra)
+require(tidyterra)
+require(raster)
+require(sf)
+library(geoR)
+```
+
+
+# Background
+
+Researchers set up a square plot with a dimension of 130 m on each side. Within the plot they established blue vane traps in a 5 m grid pattern to sample bee abundance. Every day for 10 days the researchers emptied the blue vane traps and recorded the number of bees collected. After the 10-day sampling period, they calculated the mean daily number of bees captured in the trap each day.
+
+# Challenge 1 (2 points)
+
+Import the blueVanes.csv file from GitHub. Plot the mean bee abundance as a function of the x and y coordinates. Upon initial inspection, does there appear to be spatial dependence in the bee response data?
+
+
+Lets download the file
+
+```{r}
+bluevanes = read.csv("https://github.com/ValenteJJ/SpatialEcology/raw/main/Week6/blueVanes.csv")
+head(bluevanes)
+```
+
+Lets plot this graph
+
+
+```{r}
+ggplot(bluevanes, aes(x=x, y=y, color=meanBee))+
+  geom_point()+
+  theme_bw()+
+  theme(panel.grid=element_blank())+
+  scale_color_gradient(low='blue', high='green')
+```
+
+Answer 1: 
+
+ Based off this chart and just looking visually it seems the distribution appears pretty random with some clumping of similar mean values but overall a fairly random distribution of mean values within the plot.
+ 
+ 
+
+# Challenge 2 (3 points)
+
+Empirically test for evidence of spatial dependence in bee abundance by first building a corelogram, then building a semi-variogram. Be sure to provide an envelope for assessing whether the values in each figure are statistically different from what would be expected if the bee values were randomly distributed. Describe the patterns you see, and your interpretation with regards to the spatial dependence in mean bee abundance. Be sure to identify the maximum distance at which you should interpret your figures (2/3 of the maximum distance between points).
+
+Lets do the corelogram
+
+First lets set up the matrix and determining max distance 
+```{r}
+coords = cbind(bluevanes$x, bluevanes$y)
+colnames(coords) = c('x', 'y')
+distMat = as.matrix(dist(coords))
+maxDist = (2/3) * max(distMat)
+maxDist
+```
+
+Our max distance is 89.566 
+
+Now to make our corelogram
+
+Lets set the bins to 25 because that will make the distances approximately 5 units in between
+
+```{r}
+correlog1 = pgirmess::correlog(coords, bluevanes$meanBee, method='Moran', nbclass=25, alternative = 'two.sided')
+
+round(correlog1, 2)
+```
+
+Now to plot it 
+
+```{r}
+
+tmp = data.frame(correlog1) %>%
+  mutate(significant = ifelse(p.value < 0.05, 'yes', 'no'))
+
+ggplot(tmp, aes(x=dist.class, y=coef))+
+  geom_line()+
+  geom_point(aes(color=significant, size=n))+
+  scale_color_manual(values=c('black', 'red'))+
+  theme_bw()+
+  theme(panel.grid=element_blank())+
+  geom_hline(yintercept=0, linetype='dashed')+
+  geom_vline(xintercept=maxDist, color='red')+
+  scale_x_continuous(breaks=seq(0, 75, 5))
+
+
+```
+
+Now lets do the semi-variogram 
+First setup the geodata
+
+```{r}
+geovanes = as.geodata(bluevanes)
+plot(geovanes)
+```
+
+Lets plot the variogram
+
+```{r}
+empGeor1 = variog(geovanes, max.dist=maxDist, breaks=seq(0, maxDist, by=3))
+plot(empGeor1)
+```
+Doesn't seem to  fit an exponential or spherical fit
+Regardless lets run some fits to see what predicted curve fits best
+
+First the exponential fit
+
+```{r}
+vanesexp = likfit(geovanes, cov.model='exp', ini=c(8, 40))
+summary(vanesexp)
+```
+
+Now the spherical fit
+
+```{r}
+vanessph = likfit(geovanes, cov.model='sph', ini=c(8, 40))
+summary(vanessph)
+```
+
+Finally, lets do a cubic fit
+
+
+```{r}
+vanescub = likfit(geovanes, cov.model='cubic', ini=c(8, 40))
+summary(vanescub)
+```
+
+Lets run an AIC of all these fits
+
+```{r}
+AIC(vanesexp, vanessph,vanescub)
+```
+
+
+It appears the cubic fit is the best choice
+
+Lets plot them all together
+
+
+```{r}
+plot(empGeor1)
+lines(vanesexp, col='blue')
+lines(vanessph, col='red')
+lines(vanescub,col='green')
+```
+
+Now lets plot the points with the cubic fit and a random assumption envelope
+
+```{r}
+vanesenv = variog.mc.env(geovanes, obj.var=empGeor1, nsim=99)
+
+plot(empGeor1, envelope=vanesenv)
+lines(vanescub, col='blue')
+```
+
+Answer 2:
+
+To start off using the max distance calculation; I determined the max distance to be about 89.6 units. First looking visually it appears to be strong positive spatial dependence based off the correlogram and variogram until about 25 units where spatial autocorrelation is no longer a concern. However, if you continue to look at the visual chart spatial dependence appears to once again not be randomly spaced (spatial dependence) at about 75 units. To biologically explain this, mean bee abundance has reduced abundance from from 0 to 25 units where from 25 to 75 units mean bee abundance follows a variance than would indicate random distribution or not spatially correlated.
+
+
+# Challenge 3 (4 points)
+
+Fit a simple linear model (assuming a normally distributed error term) that models mean bee abundance as a function of an intercept only (no other covariates in the model). Compare the model-estimated intercept to the bee abundance values averaged across all sites. What do you notice?  
+
+Empirically test for evidence of spatial autocorrelation IN THE MODEL RESIDUALS by first building a correlogram, then building a semi-variogram. Be sure to provide an envelope for assessing whether the values in each figure are statistically different from what would be expected if the bee values were randomly distributed in space. Compare these figures to those built for the raw data. What similarities or differences to you notice?
+
+
+First, lets calculate the mean of bee abudance of all sites and then lets run the null model
+
+```{r}
+mean(bluevanes$meanBee)
+beelinnull=lm(meanBee~1,data=bluevanes)
+summary(beelinnull)
+```
+
+Now lets calculate the residuals and add them to the original data
+
+```{r}
+res=residuals(beelinnull)
+bluevanes2=cbind(bluevanes,res)
+bluevanes2res=dplyr::select(bluevanes2,-meanBee)
+```
+
+
+Next lets resetup the coords
+
+```{r}
+coords2 = cbind(bluevanes2res$x, bluevanes2res$y)
+distMat2 = as.matrix(dist(coords2))
+maxDist2 = (2/3) * max(distMat2)
+```
+
+Lets create the correlgram
+
+```{r}
+correlnull = pgirmess::correlog(coords2, bluevanes2res$res, method='Moran', nbclass=25, alternative = 'two.sided')
+
+round(correlnull, 2)
+```
+Now plot it
+
+
+```{r}
+tmp2 = data.frame(correlnull) %>%
+  mutate(significant = ifelse(p.value < 0.05, 'yes', 'no'))
+
+ggplot(tmp2, aes(x=dist.class, y=coef))+
+  geom_line()+
+  geom_point(aes(color=significant, size=n))+
+  scale_color_manual(values=c('black', 'red'))+
+  theme_bw()+
+  theme(panel.grid=element_blank())+
+  geom_hline(yintercept=0, linetype='dashed')+
+  geom_vline(xintercept=maxDist, color='red')+
+  scale_x_continuous(breaks=seq(0, 75, 5))
+```
+
+Now lets resetup the geodata
+
+```{r}
+geovanes2 = as.geodata(bluevanes2res)
+plot(geovanes2)
+```
+
+Lets calculcate a new variogram 
+
+```{r}
+empGeor2 = variog(geovanes2, max.dist=maxDist2, breaks=seq(0, maxDist2, by=3))
+plot(empGeor2)
+```
+
+Now lets make a cubic fit again since the model is the same as the raw data setup
+
+```{r}
+vanescub2 = likfit(geovanes2, cov.model='cubic', ini=c(8, 40))
+summary(vanescub2)
+```
+
+Now lets plot the variogram and its envelope where the distribution should be random
+
+```{r}
+vanesenv2 = variog.mc.env(geovanes2, obj.var=empGeor2, nsim=99)
+
+plot(empGeor2, envelope=vanesenv2)
+lines(vanescub2, col='blue')
+```
+
+
+Answer 3:
+To start off with the first part of the question, when looking at the mean of all sites you will notice its the same value as the intercept of the null model (13.9322); as expected. Next, comparing the null model to the raw data regarding spatial distribution you will notice the same trend. Since we were just plotting the residuals in the new correlogram and variogram, this produces the same results as just doing this with the raw data from the abundance means since residuals are just essentially the distance of individual values from the overall mean (variability). Just like the prior answer, the null model correlogram and variogram both indicate that there appears to be strong positive spatial dependence until about 25 units where spatial autocorrelation is no longer a concern and random distribution is occurring.
+
+# Challenge 4 (4 points)
+
+Conventional wisdom indicates that the distribution of floral resources may substantially influence bee abundance. In addition, I am  completely making up the following fact: the average bee has a perceptual range of about 15 m. Below I have provided code for importing a raster that shows the number of flowers counted in 1 m grid cells across the entire study area. Use the focal() function from the previous lab to generate a new raster in which each cell value represents the mean number of flowers in cells within a 15 m radius. Plot the distribution of the blue vane traps over the 15 m focal raster. No text required here, just show me the plot.
+
+First lets load the raster
+
+```{r}
+
+floral = rast('https://github.com/ValenteJJ/SpatialEcology/raw/main/Week6/floralResources.tif')
+plot(floral)
+```
+
+
+Now lets create a focal weight object to make the raster cells bigger
+
+
+```{r}
+fw=focalWeight(floral, 15, "circle")
+```
+
+Now lets create the new raster with a radii circles of 15 meters and calculating cells by mean and then plot it
+
+
+```{r}
+rastmn=focal(floral, w=fw, fun="mean")
+plot(rastmn)
+```
+
+Now lets do it as ggplot
+
+```{r}
+p=ggplot()+geom_spatraster(data=rastmn)+scale_fill_gradientn(colours = terrain.colors(10))
+p
+```
+
+Unsure why colors reverse
+
+Now lets add the bee trap points
+
+```{r}
+p+geom_point(bluevanes,mapping=aes(x=x,y=y))
+```
+
+
+Answer 4:
+Sorry for the gradient reversing colors not sure why it did this, regardless, here is the finished plot with the designated bee trap points
+
+
+# Challenge 5 (4 points)
+
+Extract the focal flower value from the raster you just created at each point using the extract() function. You now have an estimate for the average number of flowers per meter around each blue vane trap. Fit a second linear model, but this time include average floral abundance within 15 m as a covariate. Export the residuals from this fitted model, and again, examine a corelogram and variogram of the residuals. As always, be sure to plot random envelopes. Now what do you notice?
+
+
+First lets make the dataframe easier by only having the coordinate values
+
+```{r}
+bluevanesxy=dplyr::select(bluevanes,-meanBee)
+```
+
+
+Now lets run the extract function
+
+```{r}
+ffv=raster::extract(rastmn,bluevanesxy,method='simple')
+```
+
+Combine the bluevane values with the focal flower values
+
+```{r}
+bluevanes3=cbind(bluevanes,ffv)
+```
+
+Now lets run the linear model
+
+```{r}
+beelinffv=lm(meanBee~focal_mean,data=bluevanes3)
+summary(beelinffv)
+```
+
+Now lets calculate the residuals 
+
+```{r}
+res2=residuals(beelinffv)
+bluevanes4=cbind(bluevanes3,res2)
+```
+
+
+Next lets resetup the coords
+
+```{r}
+coords3 = cbind(bluevanes4$x, bluevanes4$y)
+distMat3 = as.matrix(dist(coords3))
+maxDist3 = (2/3) * max(distMat3)
+```
+
+Lets create the correlgram
+
+```{r}
+correlffv = pgirmess::correlog(coords3, bluevanes4$res2, method='Moran', nbclass=25, alternative = 'two.sided')
+
+round(correlffv, 2)
+```
+Now plot the correlogram 
+
+```{r}
+tmp3 = data.frame(correlffv) %>%
+  mutate(significant = ifelse(p.value < 0.05, 'yes', 'no'))
+
+ggplot(tmp3, aes(x=dist.class, y=coef))+
+  geom_line()+
+  geom_point(aes(color=significant, size=n))+
+  scale_color_manual(values=c('black', 'red'))+
+  theme_bw()+
+  theme(panel.grid=element_blank())+
+  geom_hline(yintercept=0, linetype='dashed')+
+  geom_vline(xintercept=maxDist, color='red')+
+  scale_x_continuous(breaks=seq(0, 75, 5))
+```
+
+Lets make the dataframe usable for the geodata function
+
+```{r}
+bluevanes4res=dplyr::select(bluevanes4,c(-meanBee,-ID,-focal_mean))
+```
+
+Run the geodata
+
+```{r}
+geovanes3 = as.geodata(bluevanes4res)
+plot(geovanes3)
+```
+Now plot the variogram
+
+```{r}
+empGeor3 = variog(geovanes3, max.dist=maxDist3, breaks=seq(0, maxDist3, by=3))
+plot(empGeor3)
+```
+Now run the fit with a cubic fit again like prior models
+
+```{r}
+vanescub3 = likfit(geovanes3, cov.model='cubic', ini=c(8, 40))
+summary(vanescub3)
+```
+
+Now lets plot the variogram with the envelope
+
+```{r}
+vanesenv3 = variog.mc.env(geovanes3, obj.var=empGeor3, nsim=99)
+
+plot(empGeor3, envelope=vanesenv3)
+lines(vanescub3, col='blue')
+```
+
+Answer 5:
+
+Now when creating a model with a covariate for flowers you will notice that spatial dependence is nonexistent. You can see in the correlogram that the values in the 2/3rd range are all near zero and in the variogram using the same cubic fit as before that all the values are within that range that would assume random distribution and no spatial autocorrelation. Its amazing what adding variables to a model can do to change findings.
+
+# Challenge 6 (3 points)
+
+What is your assessment regarding the distribution of bee abundance in this study area? Does it exhibit spatial dependence, and if so, what is driving that pattern?
+
+Answer 6:
+
+When running just a model of bee abundance on the landscape based off a grid pattern it appears bee capture and abundance are spatially correlated at close distances (below 25 meters). However, this is just a model not accounting for any covariates that may better explain the patten. If you then include a variable such as flower abundance you will notice that autocorrelation of bee abundance measurements are not a concern; with the variogram appearing to state that bees are randomly distributed across the landscape at all distances.
