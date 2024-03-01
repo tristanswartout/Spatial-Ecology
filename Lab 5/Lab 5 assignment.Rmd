@@ -49,6 +49,9 @@ Answer 1:
 
 After the first simulation we have 101 randomly placed individuals. Based off expectation of what lambda in a rpoispp is defined as (the number of points per unit area), we should expect 100 individuals because a 0.01 would indicate a 0.01 portion of the total area which in this case is 10,000 units squared which would give you a value of 100. Now why is there 101 points and not exactly 100? This is likely due to it being a random generator because notice during a second simulation the value is different if set-seed is removed. 
 
+$\color{red}{\text{Perfect. +3}}$
+
+
 
 # Challenge 2 (3 points)
 
@@ -103,6 +106,9 @@ data.frame(model = c('int', 'xy', 'xy2'),
 Answer 2:
 
 Not surprising our random simulation model passed the tests of randomness for a chi-squared test and Ripleys L test indicating no spatial aggregation. However, when running linear and quadratic effect models we found that the AIC value for the linear model was very similar and competing to the null model (i.e., randomness). This indicates that the random point simulation may follow some coordinate linear pattern on the extent grid. 
+
+$\color{red}{\text{Nice. +3}}$
+
 
 
 # Challenge 3 (14 points)
@@ -219,3 +225,5 @@ Notice Critter B are random distances from each other while critter A is close t
 Answer 3:
 
 To start off you notice the distance is not random between the two species indicating that one is avoiding the other. Based off the within species distance findings, Critter A (critter 1) is clustering and not following a random distribution likely due to critter B (critter 2); note Critter B is randomly distributed in relation to itself. This would indicate to me that critter B (critter 2) is the predator and critter A (critter 1) is clustering together to avoid predation events. I made this assumption based off the typical behavior of many species of prey that will cluster in numbers to avoid predation because more individuals together will result in a lower probability of any given individual being predated (safer in numbers). 
+
+$\color{red}{\text{Nice work, Tristan. +14}}$
