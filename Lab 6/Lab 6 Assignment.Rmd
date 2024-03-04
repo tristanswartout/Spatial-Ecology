@@ -47,7 +47,9 @@ ggplot(bluevanes, aes(x=x, y=y, color=meanBee))+
 Answer 1: 
 
  Based off this chart and just looking visually it seems the distribution appears pretty random with some clumping of similar mean values but overall a fairly random distribution of mean values within the plot.
- 
+
+$\color{red}{\text{Good. +2}}$
+
  
 
 # Challenge 2 (3 points)
@@ -168,6 +170,8 @@ Answer 2:
 
 To start off using the max distance calculation; I determined the max distance to be about 89.6 units. First looking visually it appears to be strong positive spatial dependence based off the correlogram and variogram until about 25 units where spatial autocorrelation is no longer a concern. However, if you continue to look at the visual chart spatial dependence appears to once again not be randomly spaced (spatial dependence) at about 75 units. To biologically explain this, mean bee abundance has reduced abundance from from 0 to 25 units where from 25 to 75 units mean bee abundance follows a variance than would indicate random distribution or not spatially correlated.
 
+$\color{red}{\text{Great work on the figures, although there are some problems with your interpretations. First of all, there is ALSO some evidence for negative autocorrelation between 25 and 45 m.  And in your variogram, we're seeing evidence for positive spatial dependence below 25 m, and negative dependence above ~75 m. +2}}$
+
 
 # Challenge 3 (4 points)
 
@@ -260,6 +264,9 @@ lines(vanescub2, col='blue')
 Answer 3:
 To start off with the first part of the question, when looking at the mean of all sites you will notice its the same value as the intercept of the null model (13.9322); as expected. Next, comparing the null model to the raw data regarding spatial distribution you will notice the same trend. Since we were just plotting the residuals in the new correlogram and variogram, this produces the same results as just doing this with the raw data from the abundance means since residuals are just essentially the distance of individual values from the overall mean (variability). Just like the prior answer, the null model correlogram and variogram both indicate that there appears to be strong positive spatial dependence until about 25 units where spatial autocorrelation is no longer a concern and random distribution is occurring.
 
+$\color{red}{\text{Good. +4}}$
+
+
 # Challenge 4 (4 points)
 
 Conventional wisdom indicates that the distribution of floral resources may substantially influence bee abundance. In addition, I am  completely making up the following fact: the average bee has a perceptual range of about 15 m. Below I have provided code for importing a raster that shows the number of flowers counted in 1 m grid cells across the entire study area. Use the focal() function from the previous lab to generate a new raster in which each cell value represents the mean number of flowers in cells within a 15 m radius. Plot the distribution of the blue vane traps over the 15 m focal raster. No text required here, just show me the plot.
@@ -306,6 +313,9 @@ p+geom_point(bluevanes,mapping=aes(x=x,y=y))
 
 Answer 4:
 Sorry for the gradient reversing colors not sure why it did this, regardless, here is the finished plot with the designated bee trap points
+
+$\color{red}{\text{No worries. +4}}$
+
 
 
 # Challenge 5 (4 points)
@@ -417,6 +427,9 @@ Answer 5:
 
 Now when creating a model with a covariate for flowers you will notice that spatial dependence is nonexistent. You can see in the correlogram that the values in the 2/3rd range are all near zero and in the variogram using the same cubic fit as before that all the values are within that range that would assume random distribution and no spatial autocorrelation. Its amazing what adding variables to a model can do to change findings.
 
+$\color{red}{\text{Nice! +4}}$
+
+
 # Challenge 6 (3 points)
 
 What is your assessment regarding the distribution of bee abundance in this study area? Does it exhibit spatial dependence, and if so, what is driving that pattern?
@@ -424,3 +437,5 @@ What is your assessment regarding the distribution of bee abundance in this stud
 Answer 6:
 
 When running just a model of bee abundance on the landscape based off a grid pattern it appears bee capture and abundance are spatially correlated at close distances (below 25 meters). However, this is just a model not accounting for any covariates that may better explain the patten. If you then include a variable such as flower abundance you will notice that autocorrelation of bee abundance measurements are not a concern; with the variogram appearing to state that bees are randomly distributed across the landscape at all distances.
+
+$\color{red}{\text{Close. Specifically, the residual bee abundance is randomly distributed, after accounting for flowers. Good work though. +3}}$
