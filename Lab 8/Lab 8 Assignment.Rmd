@@ -166,6 +166,9 @@ rfplot=plot(rfMap)
 Answer 1:
 Looking at the data from the lab example you can notice some differences between maps immediately. For one, the bioclim and random forest models both have much higher probability of detection at a given site compared to the glm model (e.g., 0.8 versus 0.35). The reason bioclim and glm may be different is because a glm accounts for background points (pseudo-absence points) while bioclim is only accounting for presence data and a glm is weighing all variables and their significance while a bioclim is considering each variable on an equal level. A concern with the glm is the more background points you include the lower the detection probability will be based off sample size which may also explain lower probability. In the case of the random forests we use presence and background data to calculate probability of occupancy except now we are boostrapping the data over multiple simulations to determine if a varied thrush will be present at a specific location. When comparing the random forest to the bioclim you will notice the probability scale is the same but far future locations of the random forests have a high probability of a varied thrush being present. This is probability on account of background points being utilized and also the fact we are boostrapping the data to predict presence. To summarize, the random forests model likely a more accurate SDM of varied thrush compared to bioclim because without accounting for background points the bioclim is overestimating presence on the landscape. With the glm model is likely underselling the data because these pseudo absence points will cause lower presence probability with increasing sample size. 
 
+$\color{red}{\text{Good stuff. +4}}$
+
+
 # Challenge 2 (4 points)
 
 When we fit our GLM in lab, we used background points, rather than true absence points, to represent pseudo-absences. Fit the exact same GLM model, only this time use presence and true absence data. That is, replace the background rows in the dataframe with rows that represent actual sites where surveys were completed but Varied Thrush were not detected. Once you've fit the GLM, build a new SDM from this fitted model and visually compare the prediction surface to that built based on the presence-background model. What discrepancies do you notice, and what is your intuition regarding which of these two models is more reliable?
@@ -203,6 +206,9 @@ plot(glmMap1)
 ```
 Answer 2: 
 You will notice some large differences between the background model and the absence data model. To start, the probability range is much higher with the absence data model (0.8 versus 0.35) this is likely due to it being viable data and not just background points which will lower the probability due to increase sample size. I also notice areas with high probability of presence are much more narrowed down but also a higher probability is calculated. The model with absence data would be the model I would believe every time because it is making less assumptions if the varied thrush is there or not. Background points are treated as absences even if they were not truly. As a result, the background point model is limited with its accurate interpretation. 
+
+$\color{red}{\text{Nice. +4}}$
+
 
 # Challenge 3 (4 points)
 
@@ -288,6 +294,9 @@ ggplot(tmp, aes(x=xValue, y=value, color=name))+
 Answer 3:
 You will notice several differences between the two models. To start, our variables for canopy, precipitation and elevation in the absence data model all generally have higher presence probability than the background point model. Mesic however appears to have similar values for both models (possibly due to non-significance in the absence model?). This mainly tells me that the absence model will calculate a high presence probability and reaffirms my belief that this model is more useful because it is providing higher presence and is also likely more realistic because absence data was actually collected instead of pseudo points. 
 
+$\color{red}{\text{I'm not sure why your mesic graph looks like that. It shouldn't, but I also can't find a bug at quick glance. Either way, you got the gist. +4}}$
+
+
 # Challenge 4 (4 points)
 
 Varied Thrush are considered forest-dependent, and thus one might characterize mesic forests as "habitat" for the species. Calculate the total amount of mesic forest in the study area, and the mean size of the mesic forest patches.
@@ -325,6 +334,9 @@ reclassmn
 ```
 
 Answer 4: I chose 25% as the threshold because anything below 1/4 odds of seeing a varied thrush at a specified spot is fairly low odds. Comparing the mesic forest total area to the threshold habitat total area there is a significant drop. Mesic forest total area was 4,021,700 units while the threshold habitat only made up 286,624 units. Next looking at mean patch size there was also a significant decline. Mesic forest mean patch size was 749.05 units while threshold habitat only had a mean patch size of 17.81 units; quite the difference. If you're just trying to map the general habitat of the species the mesic forest approach would make sense; however, if the species in the area is a critical low levels it would be better to take the SDM approach so you can figure out what specific areas they are inhabiting and protect them. 
+
+$\color{red}{\text{Nice. +4}}$
+
 
 # Challenge 5 (4 points)
 
@@ -390,3 +402,5 @@ plot(maxentMap3)
 
 Answer 5:
 Regularization is a technique in machine learning to prevent over or under fitting. Under fitting would be the prediction doesn't match the data at all while over fitting is making the model prediction "to good to be true". The values of regularization represent how the coefficients of the model are penalized. With a low regmult value (e.g., 0.5) we are essentially over fitting the model as a result our presence probability is gonna be lower for a large portion of the area; essentially it is possibly predicting to few areas where varied thrush could be. The opposite case with a high regmult value is the model is over simplified and more the of area will have a higher probability of varied thrush presence which may be inaccurate. To low of a value and you will be over complicating the model and have an underestimate of presence; to high of a value and you will be overestimating presence. 
+
+$\color{red}{\text{Great work, Tristan. +4}}$
