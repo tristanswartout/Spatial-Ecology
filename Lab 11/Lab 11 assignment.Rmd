@@ -127,6 +127,8 @@ Answer 1:
 
 The wi metric is showing what landcover types may be selected for with this data. Looking at the coefficients I cans see barren, dry prairie, scrub-shrub, cypress swamp, pineland, hardwood swamp and upland forest are all selected for because their values are greater than 1. For logistic regression its the exponentiated odd ratio so you would state times as likely. Look at significance I can see that coastal wetland, cropland, cypress swamp, hardwood swamp, open water, pasture grassland, pine land, upland forest and urban were all significant. However, we are looking at landcovers that were selected for so we should only examine landcover types with a significant postive odds ratio. In this case, cypress swamp, hardwood swamp, landcover pineland, and landcover upland forest were all significant. These mean a panther were greater than 1 times as likely to inhabit this cover type. In the case of cypress swamp panthers were 5 times as likely to select for these areas while the second highest was hardwood swamp at 3.44 times as likely. There are significant differences and similarities between these. To start both models indicate selection for cypress swamp, pineland, hardwood swamp, and upland forest. But manly selective measures also indicate selection for scrub-shrub, barren and dry prairie but these selections were low which may indicate no significance in the logistic model.
 
+$\color{red}{\text{Pretty good. Basically, the exponentiated beta coefficients represent the odds ratios for the various cover types (i.e., the odds a point in that category is used divided by the odds is is not used). This is the same way that wi is calculated. The only difference here is that we're now including a random effect to account for non-independence among points selected by the same panther. +4}}$
+
 
 # Challenge 2 (5 points)
 
@@ -199,7 +201,7 @@ Answer 2:
 
 It is important to consider speed in some situations because speed may help distinguish individual behavior. Speed may provide clues on the typical behavior of an individual it is just gradually moving about or is it going fast from point to point which may help affirm if step lengths would be predicted to be long or short.
 
-
+$\color{red}{\text{Pretty good, although I wanted to year you comment on the fact that step speed distributions will be better for generating potential steps in situations where fixes are not constant in time. +4}}$
 
 # Challenge 3 (5 points)
 
@@ -304,6 +306,8 @@ Answer 3
 
 Panther 1 took the most tortuous path while panther 6 took the least tortuous path based on the calculated values.
 
+$\color{red}{\text{Excellent. +5}}$
+
 # Challenge 4 (5 points)
 
 For each panther, calculate the frequency with which locations were recorded as points per day. Plot path straightness as a function of frequency (there should be 6 points on this figure, one per panther). What relationship do you notice between these two variables, and why might that pattern be occurring?
@@ -376,3 +380,5 @@ abline(results)
 Answer 4:
 
 At the moment there is no significant relationship that I can see; the line may be trending as a positive relationship but it has a p-value of 0.08. I believe this pattern is occurring because we are not getting points everyday instead every few days which provides much less info on movement. However, if the relationship was significant I would expect to see as point frequency increases path straigntess decreases because more points will better show that animals do not follow a straight path. 
+
+$\color{red}{\text{Good enough. The outcome of this analysis turned out to be wonky for some reason. +5}}$
