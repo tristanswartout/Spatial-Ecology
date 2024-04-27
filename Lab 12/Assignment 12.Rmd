@@ -136,6 +136,9 @@ Answer 1:
 
 Based off a quick glance of the table it appears commute distance has the longest paths while euclidean distance generally had the shortest paths. It it intuitive why euclidean distance is shortest because it is a straight path from one point to another without accounting for resistance or impassable areas. In the opposite case, commute distance is generally the longest because it accounts for random walks which will increase the distance. A situation I can think of when euclidean and other metrics would be vastly different is when the straight path from point to point is nearly impassable or has high resistance resulting in the distance accounting for resistance being substantially longer. 
 
+$\color{red}{\text{Nicely done. +5}}$
+
+
 # Challenge 2 (5 points)
 
 In the lab we developed a 10% least-cost corridor between two protected areas. Identify what proportion of this corridor is comprised of each landcover type based on the land raster. To do this, make sure that both the land and leastCostCorridor10 rasters are spatRasters. Then mask land with leastCostCorridor10. The values in the resulting raster will be representative of the landcover values in the corridor. Summarise this information and refer back to the classification dataframe to link the landcover numbers with landcover types. What are the three most common landcover types within this corridor, and does this make sense given what you know about the resistance to movement within such landcover types?
@@ -229,6 +232,9 @@ Answer 2:
 
 Based on the highest proportion values, the most common types are as followed from greatest to least: Cypress swamp, pinelands, and freshwater marsh. These landcover types are lower in resistance but far from the lowest resistance. For example, freshwater marsh is a value of 5 which is midtier for difficulty but surprisingly a main class component of this corridor. 
 
+$\color{red}{\text{Nice. +5}}$
+
+
 # Challenge 3 (5 points)
 
 In the lab, we used the passage() function to conduct a randomized shortest path analysis mapping connectivity among two protected areas. We initially set theta to 0 thus resulting in a circuit theory based map of connectivity. Using the same passage() function, conduct the analysis again using values of theta = 0.0001 and theta = 0.001. Plot the resulting maps. What patterns do you see emerge as theta increases? Comment on the tradeoffs between biological realism and ease of conservation planning based on these three different maps of connectivity.
@@ -258,6 +264,7 @@ Answer 3:
 
 The first trend I noticed is more and more well defined path between areas as theta increases in value. This means that as theta increases the possible paths an individual can take diminishes. Now looking at reality is this the path an animal will take everytime? It is tough to say and to make a management plan to protect just this path may still result in a decline of the population due to other areas also be good possible corridors that were not documented. However, a biologist  does not have the time and money to protect every possible corridor a panther could take, so prioritizing areas where there is a high likelihood the panther will move through is probably still the best strategy. 
 
+$\color{red}{\text{Awesome. +5}}$
 
 
 # Challenge 4 (5 points)
@@ -580,3 +587,6 @@ pc3
 Answer 4:
 
 The first thing I notice is removing patch 7 decreases your iic more than removing patch 6 and this is likely due to patch 7 have by far more connections than patch 6. Furthermore, removing patch 6 actually somehow increased our pc while removing patch 7 decreased it. The result of removing patch 7 and lowering the pc is not surprising because that patch was very interconnected and now the probability of two random points being reachable is decreased. 
+
+$\color{red}{\text{Excellent. +5}}$
+
